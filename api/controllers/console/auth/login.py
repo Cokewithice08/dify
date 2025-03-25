@@ -28,6 +28,7 @@ from libs.helper import email, extract_remote_ip
 from libs.password import valid_password
 from models.account import Account
 from services.account_service import AccountService, RegisterService, TenantService
+from services.gree_sso import GreeSsoService
 from services.billing_service import BillingService
 from services.errors.account import AccountRegisterError
 from services.errors.workspace import WorkSpaceNotAllowedCreateError
@@ -94,6 +95,16 @@ class LoginApi(Resource):
 
         token_pair = AccountService.login(account=account, ip_address=extract_remote_ip(request))
         AccountService.reset_login_error_rate_limit(args["email"])
+        return {"result": "success", "data": token_pair.model_dump()}
+
+
+class GreeSSOLoginApi(Resource):
+    @setup_required
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("callback", type=str, required=True, location="args", help="单点登录获取的参数")
+        args = parser.parse_args()
+        token_pair = GreeSsoService.gree_sso(args['callback'])
         return {"result": "success", "data": token_pair.model_dump()}
 
 
@@ -233,6 +244,7 @@ class RefreshTokenApi(Resource):
 
 api.add_resource(LoginApi, "/login")
 api.add_resource(LogoutApi, "/logout")
+api.add_resource(GreeSSOLoginApi, "/gree_sso")
 api.add_resource(EmailCodeLoginSendEmailApi, "/email-code-login")
 api.add_resource(EmailCodeLoginApi, "/email-code-login/validity")
 api.add_resource(ResetPasswordSendEmailApi, "/reset-password")
