@@ -3,8 +3,9 @@ import json
 from flask import request, redirect
 from pydantic import BaseModel
 
+import models
 from extensions.ext_redis import redis_client
-from .account_service import AccountService, RegisterService, TokenPair
+from .account_service import AccountService, RegisterService, TokenPair, TenantService
 
 import requests
 
@@ -112,9 +113,10 @@ class GreeSsoService:
             name = user_info.UserName
             password = user_info.AppAccount + "@GreeSSO2025"
             language = 'zh-Hans'
-            status = 'active'
+            status = models.AccountStatus.ACTIVE
             is_setup = True
             account = RegisterService.register(email, name, password, None, None, language, status, is_setup, None)
+            TenantService.create_owner_tenant_if_not_exist(account=account, is_setup=True)
         return AccountService.login(account)
         # return tokenPair
         # return tokenPair
