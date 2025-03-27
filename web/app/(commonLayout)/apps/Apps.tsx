@@ -93,6 +93,23 @@ const Apps = () => {
   }, [mutate, t])
 
   useEffect(() => {
+    // 步骤1：解析 URL 参数
+    const searchParams = new URLSearchParams(window.location.search);
+    const consoleToken = searchParams.get('console_token');
+    const refreshToken = searchParams.get('refresh_token');
+
+    // 步骤2：验证并存储敏感数据
+    if (consoleToken && refreshToken) {
+      // 安全存储到 sessionStorage（会话级存储）
+      sessionStorage.setItem('console_token', consoleToken);
+      sessionStorage.setItem('refresh_token', refreshToken);
+
+      // 步骤3：清除 URL 中的敏感参数
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []); // 空依赖数组确保只执行一次
+
+  useEffect(() => {
     if (isCurrentWorkspaceDatasetOperator)
       return router.replace('/datasets')
   }, [router, isCurrentWorkspaceDatasetOperator])
