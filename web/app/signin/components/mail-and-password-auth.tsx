@@ -27,7 +27,21 @@ export default function MailAndPasswordAuth({ isInvite, isEmailSetup, allowRegis
   const emailFromLink = decodeURIComponent(searchParams.get('email') || '')
   const [email, setEmail] = useState(emailFromLink)
   const [password, setPassword] = useState('')
+  // 步骤1：解析 URL 参数
+  const urlsearchParams = new URLSearchParams(window.location.search);
+  console.log(urlsearchParams);
+  const consoleToken = urlsearchParams.get('console_token');
+  const refreshToken = urlsearchParams.get('refresh_token');
 
+  // 步骤2：验证并存储敏感数据
+  if (consoleToken && refreshToken) {
+    // 安全存储到 sessionStorage（会话级存储）
+    localStorage.setItem('console_token', consoleToken);
+    localStorage.setItem('refresh_token', refreshToken);
+
+    // 步骤3：清除 URL 中的敏感参数
+    router.replace('/apps')
+  }
   const [isLoading, setIsLoading] = useState(false)
   const handleEmailPasswordLogin = async () => {
     if (!email) {
