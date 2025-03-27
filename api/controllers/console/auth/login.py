@@ -107,7 +107,7 @@ class GreeSSOLoginApi(Resource):
         token_pair = GreeSsoService.gree_sso(args['callback'])
         console_token = token_pair.access_token
         refresh_token = token_pair.refresh_token
-        return redirect(f"http://localhost:3000/apps?console_token={console_token}&refresh_token={refresh_token}")
+        return redirect(f"http://localhost:3000/signin?console_token={console_token}&refresh_token={refresh_token}")
 
 
 class LogoutApi(Resource):
