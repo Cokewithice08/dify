@@ -1,7 +1,7 @@
 from typing import cast
 
 import flask_login  # type: ignore
-from flask import request
+from flask import request, redirect
 from flask_restful import Resource, reqparse  # type: ignore
 
 import services
@@ -105,7 +105,9 @@ class GreeSSOLoginApi(Resource):
         parser.add_argument("callback", type=str, required=True, location="args", help="单点登录获取的参数")
         args = parser.parse_args()
         token_pair = GreeSsoService.gree_sso(args['callback'])
-        return {"result": "success", "data": token_pair.model_dump()}
+        console_token = token_pair.access_token
+        refresh_token = token_pair.refresh_token
+        return redirect(f"http://localhost:3000/apps?console_token={console_token}&refresh_token={refresh_token}")
 
 
 class LogoutApi(Resource):

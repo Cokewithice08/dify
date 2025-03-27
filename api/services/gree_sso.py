@@ -1,7 +1,11 @@
-from flask import request
+import json
+
+from flask import request, redirect
 from pydantic import BaseModel
+
 from extensions.ext_redis import redis_client
 from .account_service import AccountService, RegisterService, TokenPair
+
 import requests
 
 # 格力单点登录
@@ -15,32 +19,31 @@ GREE_REDIS_KEY = 'gree:user:mail:'
 
 # 用户数据
 class userInfo(BaseModel):
-    Success: str
-    OpenID: str
-    AppAccount: str
-    StaffID: str
-    EmpID: str
-    HREmpID: str
-    OrgL1Alias: str
-    OrgL1Name: str
-    OrgL2Alias: str
-    OrgL2Name: str
-    OrgL3Alias: str
-    OrgL3Name: str
-    Job: str
-    Token: str
-    UserName: str
-    DepartmentID: str
-    DepartmentName: str
-    CompanyID: str
-    CompanyName: str
-    Title: str
-    Office: str
-    InService: str
-    Phone: str
-    OfficeLeader: str
-    DeptLeader: str
-    IP: str
+    OpenID: str | None = None
+    AppAccount: str | None = None
+    StaffID: str | None = None
+    EmpID: str | None = None
+    HREmpID: str | None = None
+    OrgL1Alias: str | None = None
+    OrgL1Name: str | None = None
+    OrgL2Alias: str | None = None
+    OrgL2Name: str | None = None
+    OrgL3Alias: str | None = None
+    OrgL3Name: str | None = None
+    Job: str | None = None
+    Token: str | None = None
+    UserName: str | None = None
+    DepartmentID: str | None = None
+    DepartmentName: str | None = None
+    CompanyID: str | None = None
+    CompanyName: str | None = None
+    Title: str | None = None
+    Office: str | None = None
+    InService: bool | None = None
+    Phone: str | None = None
+    OfficeLeader: str | None = None
+    DeptLeader: str | None = None
+    IP: str | None = None
 
 
 # 调用接口返回的数据
@@ -101,16 +104,21 @@ class GreeSsoService:
         token = get_token(callback)
         user_info = get_user_info(token)
         redis_key = get_redis_key(user_info.StaffID)
-        redis_client.set(redis_key, user_info)
+        redis_client.set(redis_key, json.dumps(user_info.__dict__))
         account = AccountService.get_user_through_email(user_info.OpenID)
         if not account:
             #  没有账号信息新注册再登录
             email = user_info.OpenID
-            name = user_info.name
-            password = user_info.account + "@GreeSSO2025"
+            name = user_info.UserName
+            password = user_info.AppAccount + "@GreeSSO2025"
             language = 'zh-Hans'
             status = 'active'
-            account = RegisterService.register(email, password, name, language, status)
-            return AccountService.login(account)
+            is_setup = True
+            account = RegisterService.register(email, name, password, None, None, language, status, is_setup, None)
+        return AccountService.login(account)
+        # return tokenPair
+        # return tokenPair
+        # redirect(f"http://localhost:3000/apps?console_token={console_token}&refresh_token={refresh_token}")
+        # return RedirectResponse(f"http://localhost:3000/apps?console_token={console_token}&refresh_token={refresh_token}")
 #               调用注册
 #         获取数据库、查看是否有这个人的信息，没有就注册、有就调用登录接口（注意sso的token问题）
