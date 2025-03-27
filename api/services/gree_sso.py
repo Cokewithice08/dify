@@ -115,8 +115,9 @@ class GreeSsoService:
             language = 'zh-Hans'
             status = models.AccountStatus.ACTIVE
             is_setup = True
-            account = RegisterService.register(email, name, password, None, None, language, status, is_setup, None)
-            TenantService.create_owner_tenant_if_not_exist(account=account, is_setup=True)
+            create_worksapce_require = False
+            account = RegisterService.register(email, name, password, None, None, language, status, is_setup, create_worksapce_require)
+            # TenantService.create_owner_tenant_if_not_exist(account=account, is_setup=True)
         return AccountService.login(account)
         # return tokenPair
         # return tokenPair
